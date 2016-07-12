@@ -4,12 +4,32 @@
 <meta charset="utf-8">
 <title>琐事网</title>
 <style>
+body {
+	font-size: 14px;
+	margin:0;
+	padding:0;
+	color:#333;
+	background:#fff;
+	font-family:Arial, Helvetica, sans-serif 
+}
+ul,li,ol,dl,dt,dd,p,h1,h2,h3,h4,input,textarea{padding:0px; margin:0px; list-style:none; font-size:14px; font-weight:normal; line-height:12px;}
+em,i{ font-style:normal}
+img{border:none}
+a{text-decoration:none; color:#333}
+/*CLEARFIX
+-------------------------------------------------------------- */
+.clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.clearfix { display: inline-block; }
+* html .clearfix { height: 1%; }
+.clearfix { display: block; }
+/*---------------------------------------------------*/
+
+.none{display:none;}
 .arae_choose_top,.arae_choose_nr{padding-left:54px; padding-top:6px; padding-bottom:6px; background:#cdcdcd; margin-bottom:7px;}
 .arae_choose_top li,.arae_choose_nr li{ line-height:18px; border-radius:3px; padding:0 10px; float:left; margin-right:40px; cursor:pointer;}
 .arae_choose_top li.cur,.arae_choose_nr li.cur,.arae_choose_nr li:hover{color:#fff; background:#50a27c;}
 .arae_choose_nr{margin-bottom:15px; padding-bottom:0;}
 .arae_choose_nr li{margin-bottom:6px;}
-
 .bq_tab_nr .lite{margin-bottom:15px;}
 .bq_tab_nr .perfect .arae_choose_back{padding-left:28px; margin-bottom:13px;}
 .bq_tab_nr .perfect .arae_choose_back a{color:#7f7f7f; }
@@ -26,7 +46,105 @@
 .bq_tab_nr .arae_per_table .b5 label.radio{margin-left:10px; margin-right:0;}
 </style>
 <script type="text/javascript" src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
-<script type="text/javascript" src="https://github.com/jooyin/areaChoose/blob/master/addArea.js"></script>
+<script type="text/javascript">
+	//地理标签初始化
+var suoshiConfig = {
+  ajaxUrl : 'http://passport.nuglog.com/jsonstruts/'
+}
+var addBq = {};
+addBq.addDili = function(content){
+	$.ajax({
+		url:suoshiConfig.ajaxUrl+"queryTagByAdminDivisonParams?dataMap=?",
+		dataType:"json",
+		type:"post",
+		data:{content:content},
+		success: function(data){		
+			if(data.dataMap.status){
+				var list=data.dataMap.data;
+				var temp = '<ul class="clearfix">';
+				var temp2 = '';
+				for(var j=0; j<list.general.length;j++){
+					temp2 += '<a href="javascript:;" sk="'+list.general[j].key+'">'+list.general[j].value+'</a>';
+				}
+				$('#landform .option').html(temp2);
+				if(list.geography == undefined){
+					$('.area_check:eq(0) .lite[rel=lite]').show();
+					$('.area_check:eq(0) .lite[rel=perfect]').hide();
+					$('.area_check:eq(0) .tab_perfe').text('我有更完善的资料');
+					for(var i = 0,length = list.addrList.length; i < length; i++){
+						temp += '<li sid="'+list.addrList[i].id+'" sk="'+list.addrList[i].sk+'">'+list.addrList[i].value+'</li>';
+					}
+						temp += '</ul>'
+					$('.arae_choose_nr:eq(0)').html(temp);
+					addBq.addDiliClick();
+				}else{
+					$('.area_check:eq(0) .lite[rel=lite]').hide();
+					$('.area_check:eq(0) .lite[rel=perfect]').show();
+					$('.area_check:eq(0) .tab_perfe').text('回到精简版');
+					addBq.constsnt.dili = list.adminDivisonSk;
+					$('.arae_choose_back span').html(list.geography);
+					addBq.constsnt.diliArea = list.geography.split('/');
+				}
+			}
+		}
+	})
+}
+addBq.addDiliSub = function(id,index){
+	$.ajax({
+		url:suoshiConfig.ajaxUrl+"queryAdminDivisonById?dataMap=?",
+		dataType:"json",
+		type:"post",
+		data:{id:id},
+		success: function(data){		
+			if(data.dataMap.status){
+				var list=data.dataMap.data;
+				var temp = '<ul class="clearfix">';
+				if(list != null){
+					for(var i = 0,length = list.length; i < length; i++){
+						temp += '<li sid="'+list[i].id+'" sk="'+list[i].sk+'">'+list[i].value+'</li>';
+					}
+						temp += '</ul>'
+					$('.arae_choose_nr:visible').hide();
+					$('.arae_choose_top li.cur').removeClass();
+					$('.arae_choose_top li:eq('+ index +')').addClass('cur');
+					$('.arae_choose_nr:eq('+index+')').show().html(temp);
+					addBq.addDiliClick();
+				}
+			}
+		}
+	})
+}
+addBq.addDiliTag = function(){
+	$('.arae_choose_top li').on('click',function(){
+		var index = $(this).index();
+		$('.arae_choose_nr:visible').hide();
+		$('.arae_choose_nr:eq('+ index +')').show();
+		$('.arae_choose_top li.cur').removeClass();
+		$('.arae_choose_top li:eq('+ index +')').addClass('cur');
+	})
+}
+addBq.addDiliClick = function(){
+	$('.arae_choose_nr li').on('click',function(){
+		var $nr = $(this).parents('.arae_choose_nr');
+		var sid = $(this).attr('sid');
+		var index = $nr.index();
+		$nr.find('li').removeClass('cur');
+		$(this).addClass('cur');
+		$nr.nextAll().empty();
+		addBq.constsnt.dili = $(this).attr('sk');
+		addBq.constsnt.diliArea[index-1]=$(this).text();
+		addBq.constsnt.diliArea.splice(index,addBq.constsnt.diliArea.length);
+		addBq.addDiliSub(sid,index);
+	})
+}
+addBq.addDiliChecked = function(){
+	$('.arae_choose_back span').html(addBq.constsnt.diliArea.join('/'));
+}
+$(function(){
+  addBq.addDili();
+})
+
+</script>
 </head>
 <body>
   <div class="bq_tab_nr" rel="tag">                	
