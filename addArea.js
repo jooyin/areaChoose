@@ -1,6 +1,6 @@
 //地理标签初始化
 var suoshiConfig = {
-  ajaxUrl = 'http://passport.nuglog.com/jsonstruts/';
+  ajaxUrl : 'http://passport.nuglog.com/jsonstruts/'
 }
 var addBq = {};
 addBq.addDili = function(content){
