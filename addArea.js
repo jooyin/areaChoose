@@ -1,8 +1,11 @@
-//地理标签初始化
+	//地理标签初始化
 var suoshiConfig = {
   ajaxUrl : 'http://passport.nuglog.com/jsonstruts/'
 }
 var addBq = {};
+addBq.constsnt={
+	diliArea:[]
+}
 addBq.addDili = function(content){
 	$.ajax({
 		url:suoshiConfig.ajaxUrl+"queryTagByAdminDivisonParams?dataMap=?",
@@ -13,31 +16,17 @@ addBq.addDili = function(content){
 			if(data.dataMap.status){
 				var list=data.dataMap.data;
 				var temp = '<ul class="clearfix">';
-				var temp2 = '';
-				for(var j=0; j<list.general.length;j++){
-					temp2 += '<a href="javascript:;" sk="'+list.general[j].key+'">'+list.general[j].value+'</a>';
+				for(var i = 0,length = list.addrList.length; i < length; i++){
+					temp += '<li sid="'+list.addrList[i].id+'" sk="'+list.addrList[i].sk+'">'+list.addrList[i].value+'</li>';
 				}
-				$('#landform .option').html(temp2);
-				if(list.geography == undefined){
-					$('.area_check:eq(0) .lite[rel=lite]').show();
-					$('.area_check:eq(0) .lite[rel=perfect]').hide();
-					$('.area_check:eq(0) .tab_perfe').text('我有更完善的资料');
-					for(var i = 0,length = list.addrList.length; i < length; i++){
-						temp += '<li sid="'+list.addrList[i].id+'" sk="'+list.addrList[i].sk+'">'+list.addrList[i].value+'</li>';
-					}
-						temp += '</ul>'
-					$('.arae_choose_nr:eq(0)').html(temp);
-					addBq.addDiliClick();
-				}else{
-					$('.area_check:eq(0) .lite[rel=lite]').hide();
-					$('.area_check:eq(0) .lite[rel=perfect]').show();
-					$('.area_check:eq(0) .tab_perfe').text('回到精简版');
-					addBq.constsnt.dili = list.adminDivisonSk;
-					$('.arae_choose_back span').html(list.geography);
-					addBq.constsnt.diliArea = list.geography.split('/');
-				}
+					temp += '</ul>'
+				$('.arae_choose_nr:eq(0)').html(temp);
+				addBq.addDiliClick();
 			}
 		}
+	})
+	$('#showArea').on('click',function(){
+		addBq.addDiliChecked();
 	})
 }
 addBq.addDiliSub = function(id,index){
@@ -82,14 +71,13 @@ addBq.addDiliClick = function(){
 		$nr.find('li').removeClass('cur');
 		$(this).addClass('cur');
 		$nr.nextAll().empty();
-		addBq.constsnt.dili = $(this).attr('sk');
 		addBq.constsnt.diliArea[index-1]=$(this).text();
 		addBq.constsnt.diliArea.splice(index,addBq.constsnt.diliArea.length);
 		addBq.addDiliSub(sid,index);
 	})
 }
 addBq.addDiliChecked = function(){
-	$('.arae_choose_back span').html(addBq.constsnt.diliArea.join('/'));
+	alert(addBq.constsnt.diliArea.join('/'));
 }
 $(function(){
   addBq.addDili();
